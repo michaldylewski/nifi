@@ -1,0 +1,16 @@
+version: '3.0'
+
+services:
+  nifi:
+    image: apache/nifi:1.28.1
+    container_name: nifi
+    ports:
+    - "8080:8080"
+    - "8443:8443"
+    volumes:
+    - ./conf:/var/conf
+    environment:
+    - SINGLE_USER_CREDENTIALS_USERNAME=admin
+    - SINGLE_USER_CREDENTIALS_PASSWORD=123456789012
+    - NIFI_WEB_HTTP_HOST=AWS_NIFI_WEB_HTTP_HOST # IP publiczne Waszej maszyny EC2
+    - NIFI_WEB_PROXY_HOST=AWS_NIFI_WEB_HTTP_HOST:8443 # IP publiczne Waszej maszyny EC2
