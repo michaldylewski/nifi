@@ -1,4 +1,6 @@
 #!/bin/bash
+# Skrypt przeznaczony do instalacji na AWS na maszunie typu z1d.large
+# z zainstalowanym OS w wersji Ubuntu 24.04.1 LTS
 
 AWS_NIFI_WEB_HTTP_HOST=$(curl http://checkip.amazonaws.com)
 
