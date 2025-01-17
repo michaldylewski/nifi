@@ -38,6 +38,7 @@ cd ~ && wget https://raw.githubusercontent.com/michaldylewski/nifi/refs/heads/ma
 cd ~ && (sed -i -e "s/AWS_NIFI_WEB_HTTP_HOST/$AWS_NIFI_WEB_HTTP_HOST/g" docker-compose.yml)
 
 # Uruchomienie docker-compose w tle
+cd ~ && mkdir /home/ubuntu/conf
 cd ~ && sudo docker-compose up -d
 
 # Możesz dodać inne komendy po uruchomieniu docker-compose
