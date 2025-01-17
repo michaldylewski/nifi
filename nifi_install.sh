@@ -42,3 +42,10 @@ cd ~ && sudo docker-compose up -d
 
 # Możesz dodać inne komendy po uruchomieniu docker-compose
 echo "Docker Compose został uruchomiony w tle."
+
+# Link do instancji NiFi:
+echo "https://$AWS_NIFI_WEB_HTTP_HOST:8443/nifi"
+
+# Dane do logoowania:
+echo "Login: admin"
+echo "Password: 123456789012"
