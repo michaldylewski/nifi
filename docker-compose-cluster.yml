@@ -17,7 +17,7 @@ services:
     container_name: nifi-node1
     hostname: nifi-node1
     ports:
-      - "8081:8080"
+      - "8082:8080"
     environment:
       NIFI_WEB_HTTP_PORT: "8080"
       NIFI_SENSITIVE_PROPS_KEY: MySuperSecretKey123456!
@@ -27,7 +27,7 @@ services:
       NIFI_CLUSTER_NODE_ADDRESS: nifi-node1
       NIFI_ZK_CONNECT_STRING: zookeeper:2181
 
-      NIFI_WEB_PROXY_HOST: AWS_NIFI_WEB_HTTP_HOST:8081
+      NIFI_WEB_PROXY_HOST: 54.237.233.92:8082
 
       NIFI_ZOOKEEPER_CONNECT_TIMEOUT: 3 sec
       NIFI_ZOOKEEPER_SESSION_TIMEOUT: 10 sec
@@ -44,7 +44,7 @@ services:
     container_name: nifi-node2
     hostname: nifi-node2
     ports:
-      - "8082:8080"
+      - "8083:8080"
     environment:
       NIFI_WEB_HTTP_PORT: "8080"
       NIFI_SENSITIVE_PROPS_KEY: MySuperSecretKey123456!
@@ -54,7 +54,7 @@ services:
       NIFI_CLUSTER_NODE_ADDRESS: nifi-node2
       NIFI_ZK_CONNECT_STRING: zookeeper:2181
 
-      NIFI_WEB_PROXY_HOST: AWS_NIFI_WEB_HTTP_HOST:8082
+      NIFI_WEB_PROXY_HOST: 54.237.233.92:8083
 
       NIFI_ZOOKEEPER_CONNECT_TIMEOUT: 3 sec
       NIFI_ZOOKEEPER_SESSION_TIMEOUT: 10 sec
@@ -71,7 +71,7 @@ services:
     container_name: nifi-node3
     hostname: nifi-node3
     ports:
-      - "8083:8080"
+      - "8084:8080"
     environment:
       NIFI_WEB_HTTP_PORT: "8080"
       NIFI_SENSITIVE_PROPS_KEY: MySuperSecretKey123456!
@@ -81,7 +81,7 @@ services:
       NIFI_CLUSTER_NODE_ADDRESS: nifi-node3
       NIFI_ZK_CONNECT_STRING: zookeeper:2181
 
-      NIFI_WEB_PROXY_HOST: AWS_NIFI_WEB_HTTP_HOST:8083
+      NIFI_WEB_PROXY_HOST: 54.237.233.92:8084
 
       NIFI_ZOOKEEPER_CONNECT_TIMEOUT: 3 sec
       NIFI_ZOOKEEPER_SESSION_TIMEOUT: 10 sec
@@ -92,3 +92,103 @@ services:
       NIFI_CLUSTER_LOAD_BALANCE_ADDRESS_UPDATE_INTERVAL: 1 sec
     depends_on:
       - zookeeper
+
+  ##################################
+  # NiFi Registry
+  ##################################
+  nifi-registry:
+    image: apache/nifi-registry:1.28.1
+    container_name: nifi-registry
+    ports:
+      - "18080:18080"  # UI for registry
+    environment:
+      NIFI_REGISTRY_WEB_HTTP_PORT: "18080"
+
+  ##################################
+  # Kafka Brokers
+  ##################################
+  kafka-1:
+    image: confluentinc/cp-kafka:7.6.1
+    container_name: kafka-1
+    hostname: kafka-1
+    ports:
+      - "9091:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-1:9092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+    depends_on:
+      - zookeeper
+
+  kafka-2:
+    image: confluentinc/cp-kafka:7.6.1
+    container_name: kafka-2
+    hostname: kafka-2
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 2
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-2:9092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+    depends_on:
+      - zookeeper
+
+  kafka-3:
+    image: confluentinc/cp-kafka:7.6.1
+    container_name: kafka-3
+    hostname: kafka-3
+    ports:
+      - "9093:9092"
+    environment:
+      KAFKA_BROKER_ID: 3
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-3:9092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+    depends_on:
+      - zookeeper
+
+  ##################################
+  # Schema Registry
+  ##################################
+  schema-registry:
+    image: confluentinc/cp-schema-registry:7.6.1
+    container_name: schema-registry
+    ports:
+      - "8081:8081"
+    depends_on:
+      - kafka-1
+      - kafka-2
+      - kafka-3
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: kafka-1:9092,kafka-2:9092,kafka-3:9092
+
+  ##################################
+  # AKHQ
+  ##################################
+
+  akhq:
+    image: tchiotludo/akhq:0.26.0
+    container_name: akhq
+    ports:
+      - "8085:8080"
+    environment:
+      AKHQ_CONFIGURATION: |
+        akhq:
+          connections:
+            my-cluster:
+              properties:
+                bootstrap.servers: "kafka-1:9092,kafka-2:9092,kafka-3:9092"
+              schema-registry:
+                url: "http://schema-registry:8081"
+    depends_on:
+      - kafka-1
+      - kafka-2
+      - kafka-3
+      - schema-registry
