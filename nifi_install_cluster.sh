@@ -45,19 +45,23 @@ cd ~ && sudo docker-compose -f docker-compose-cluster.yml up -d
 echo "Docker Compose został uruchomiony w tle."
 
 # Link do klastra Apache NiFi:
+echo "Link do klastra Apache NiFi"
 
 echo "http://$AWS_NIFI_WEB_HTTP_HOST:8082/nifi"
 echo "http://$AWS_NIFI_WEB_HTTP_HOST:8083/nifi"
 echo "http://$AWS_NIFI_WEB_HTTP_HOST:8084/nifi"
 
 # Link do Apache NiFi Registry:
+echo "Link do Apache NiFi Registry"
 
 echo "http://$AWS_NIFI_WEB_HTTP_HOST:18080/nifi-registry"
 
 # Link do schema registry:
+echo "Link do schema registry"
 
 echo "http://$AWS_NIFI_WEB_HTTP_HOST:8081"
 
 # Link do AKHQ:
+echo "Link do AKHQ"
 
 echo "http://$AWS_NIFI_WEB_HTTP_HOST:8085"
